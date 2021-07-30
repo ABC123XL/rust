@@ -1,0 +1,28 @@
+fn main (){
+    let light_R = TrafficLight::Red;
+    let light_G = TrafficLight::Green;
+    let light_Y = TrafficLight::Yellow;
+    println!("Red light is :{}",light_R.time_R());
+    println!("Green light is :{}",light_R.time_G());
+    println!("Yello light is :{}",light_Y.time_Y());
+
+
+}
+//枚举的关键字 enum
+enum TrafficLight{
+    Red,
+    Green,
+    Yellow,
+}
+
+impl TrafficLight{
+    fn time_R(&self) -> u8{
+        60
+    }
+    fn time_G(&self) -> u8{
+        10
+    }
+    fn time_Y(&self) -> u8{
+        2
+    }
+}
