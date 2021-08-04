@@ -1,0 +1,100 @@
+#![cfg_attr(not(feature = "std"),no_std)]
+
+/// A module for proof existence 
+pub use pallet::*;
+
+#[frame_support::pallet]
+pub mod pallet{
+    use frame_support::{
+        dispatch::DispatchResultWihtPostInfo,
+        pallet_prelude::*
+    };
+    use frame_system::pallet_prelude::*;
+    use sp_std::vec::Vec;
+
+    #[pallet::config]
+    pub trait Config: frame_system::Config{
+        type Evnet: From<Event<self>> + IsType<<self as frame_system::Config>::Event>;
+
+    }
+
+    #[pallet::pallet]
+    #[pallet::generate_stor(pub(super) trait Store)]
+    pub strcut Pallet<T>(_):
+
+    #[pallet::storage]
+    #[pallet::getter(fn proofs)]
+    pub tyep Proofs<T: Config> = StorageMap<
+        -,
+        Black2_128Concat,
+        Vec<u8>,
+        (T::AccountId,T::BlaocNumber)
+    >;
+    #[pallet::event]
+    #[pallet::metadata(T::AccountId = "AccountId")]
+    #[pallet::generate_deposit(pub(super) fn deposit_event)]
+    pub enum Event<T:Config>{
+        ClaimCreated(T::AccountId,Vec<u8>),
+        ClaimRevoked(T::AccountId,Vec<u8>),
+    }
+
+    #[pallet::error]
+    pub enum Error<T>{
+        ProofAlreadExist,
+        ClaimNotExist,
+        NotClaimOwner,
+    }
+
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for pallet<T>{
+
+    } 
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T>{
+        #[pallet::weight(0)]
+        pub fn create_claim(
+            origin: OriginFor<T>,
+            claim:Vec<u8>
+        ) -> DispatchResultWihtPostInfo{
+            let sender = ensure_singned(origin)?;
+            
+            ensure!(!Proofs::<T>::contains_key(&claim),Error::<T>::ProofAlreadExist);
+            
+            Proofs::<T>::insert(
+                &claim,
+                (sender.clone(), frame_system::Pallet::<T>::block_number())
+            );
+
+            self::deposit_event(Event::ClaimCreated(sender,claim));
+            OK(().into)
+        }
+
+        #[pallet::weight(0)]
+        pub fn create_claim(
+            origin: OriginFor<T>,
+            claim:Vec<u8>
+        ) -> DispatchResultWihtPostInfo{
+            let sender = ensure_singned(origin)?;
+
+            let (owner,_) = Proofs::<T>::get(&claim).ok_or(Error::<T>::ClaimNotExist)?;
+
+            ensure!(owner == sender,Error::<T>::NotClaimOwner);
+
+            Proofs::<T>::remove(&claim);
+
+            Self::deposit_event(Event::ClaimRevoked(sender,claim));
+            OK(()into())
+        }
+
+
+    }
+
+
+
+
+
+
+      
+
+}
